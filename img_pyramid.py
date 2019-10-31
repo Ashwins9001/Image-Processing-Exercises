@@ -16,6 +16,7 @@ for i in range(6):
 
 #Laplacian, applies blur acting as bandpass filter to certain intensity frequencies
 #Subtraction b/w original and down-sampled version enhances features
+#Addl laplacian pyramid can store fine details that're lost as each level is difference b/w consecutive gaussian pyramids, useful in reconstruction
 layer = gaussian_pyramid[5]
 laplacian_pyramid = [layer]
 
@@ -30,10 +31,13 @@ for i in range(5, 0, -1):
     #Compare with prev layer, both should be of equal size
     laplacian = cv2.subtract(gaussian_pyramid[i-1], gaussian_expanded)
     laplacian_pyramid.append(laplacian)
-    cv2.imshow(str(i), laplacian)
-    
 
+reconstructed_image = laplacian_pyramid[0]
+for i in range(1, 6):
+    size = (laplacian_pyramid[i].shape[1], laplacian_pyramid[i].shape[0])
+    reconstructed_image = cv2.pyrUp(reconstructed_image, dstsize=size)
+    #Return details through addition
+    reconstructed_image = cv2.add(reconstructed_image, laplacian_pyramid[i])
 
-cv2.imshow("Original image", img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
